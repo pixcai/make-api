@@ -102,7 +102,8 @@ API
 Make an instance that have all the above methods and uses `defaultConfig` and `factory`.
 
 - `defaultConfig`: request config.
-- `[factory]`: An object that must have field `request`.
+
+- `factory`: An object that must have field `request`.
 
 License
 ---------

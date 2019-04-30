@@ -5,16 +5,15 @@ const _cloneDeep = require('lodash.clonedeep');
 
 const createFactory = (factory, parseConfig = _cloneDeep) => (config, mapping) => {
   const parsedConfig = parseConfig(config);
-  let url = _get(parsedConfig, 'url');
+  const url = _get(parsedConfig, 'url');
 
   if (url && mapping) {
-    const parts = url.match(/:[^/=&#]+/g);
+    const parts = url.match(/:([^/=&#?]+)/g);
 
     if (parts) {
-      parts.forEach((pattern) => {
-        url = url.replace(RegExp(pattern, 'g'), _get(mapping, pattern.substr(1)));
-      });
-      parsedConfig.url = url;
+      parsedConfig.url = parts.reduce((part, re) => {
+        return part.replace(RegExp(re, 'g'), _get(mapping, re.substr(1)));
+      }, url);
     }
   }
 
