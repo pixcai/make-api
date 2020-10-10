@@ -1,7 +1,7 @@
 {
   "name": "@pixcai/make-api",
   "description": "Make a promise-based API use RESTful style",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "index.js",
   "keywords": [
     "api",
@@ -11,9 +11,7 @@
     "build": "webpack --mode production"
   },
   "dependencies": {
-    "lodash.clonedeep": "^4.5.0",
-    "lodash.get": "^4.4.2",
-    "lodash.merge": "^4.6.1"
+    "axios": "^0.18.0"
   },
   "devDependencies": {
     "axios": "^0.18.0",

@@ -1,52 +1,35 @@
-const axios = require('axios');
-const _get = require('lodash.get');
-const _merge = require('lodash.merge');
-const _cloneDeep = require('lodash.clonedeep');
-
-const createFactory = (factory, parseConfig = _cloneDeep) => (config, mapping) => {
-  const parsedConfig = parseConfig(config);
-  const url = _get(parsedConfig, 'url');
-
-  if (url && mapping) {
-    const parts = url.match(/:([^/=&#?]+)/g);
-
-    if (parts) {
-      parsedConfig.url = parts.reduce((part, re) => {
-        return part.replace(RegExp(re, 'g'), _get(mapping, re.substr(1)));
-      }, url);
-    }
+function parseConfig({ url, ...config }, mappings) {
+  if (typeof url === 'string' && mappings && typeof mappings === 'object') {
+    Array.from(url.matchAll(/:([^/?=&#]+)/g)).forEach(([variable, key]) => {
+      url = url.replace(variable, mappings[key] || '');
+    });
   }
-
-  return factory.request(parsedConfig);
-};
-
-const createMethod = method => function (url) {
-  return createFactory(this, config => _merge(config, { url, method }));
-};
-
-function API(defaultConfig, factory) {
-  if (!(this instanceof API)) {
-    return new API(defaultConfig, factory);
-  }
-  this.request = createFactory(factory || API, config => _merge(defaultConfig, config));
+  return { ...config, url };
 }
 
-API.prototype.DELETE = createMethod('DELETE');
-API.prototype.GET = createMethod('GET');
-API.prototype.OPTIONS = createMethod('OPTIONS');
-API.prototype.HEAD = createMethod('HEAD');
-API.prototype.PATCH = createMethod('PATCH');
-API.prototype.POST = createMethod('POST');
-API.prototype.PUT = createMethod('PUT');
+function API(defaultConfig, factory = API) {
+  this.request = (config, mappings) => factory.request(
+    parseConfig({ ...defaultConfig, ...config }, mappings),
+  );
+}
 
-API.request = axios;
+API.request = require('axios');
 
-export const DELETE = API.prototype.DELETE.bind(API);
-export const GET = API.prototype.GET.bind(API);
-export const OPTIONS = API.prototype.OPTIONS.bind(API);
-export const HEAD = API.prototype.HEAD.bind(API);
-export const PATCH = API.prototype.PATCH.bind(API);
-export const POST = API.prototype.POST.bind(API);
-export const PUT = API.prototype.PUT.bind(API);
+const createMethod = (method) => function (defaultConfig) {
+  if (typeof defaultConfig === 'string') {
+    defaultConfig = { method, url: defaultConfig };
+  } else {
+    defaultConfig = { method, ...defaultConfig };
+  }
+  return new API(defaultConfig, this instanceof API ? this : API).request;
+};
+
+export const PUT = API.prototype.PUT = createMethod('put');
+export const GET = API.prototype.GET = createMethod('get');
+export const POST = API.prototype.POST = createMethod('post');
+export const HEAD = API.prototype.HEAD = createMethod('head');
+export const PATCH = API.prototype.PATCH = createMethod('patch');
+export const DELETE = API.prototype.DELETE = createMethod('delete');
+export const OPTIONS = API.prototype.OPTIONS = createMethod('options');
 
 export default API;

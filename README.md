@@ -95,7 +95,7 @@ API
 ### `PATCH(url)`
 ### `POST(url)`
 ### `PUT(url)`
-### `API.request(config, mapping)`
+### `API.request(config)`
 
 ### `new API(defaultConfig, factory = API)`
 
